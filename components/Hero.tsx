@@ -47,7 +47,7 @@ const Hero = () => {
               <p className="regular-16 text-gray-20">Hasil Diagnosa</p>
               <Image src="/close.svg" alt="close" width={24} height={24} />
             </div>
-            <p className="bold-20 text-white">Terserang Penyakit</p>
+            <p className="bold-20 text-white">Ganoderma</p>
           </div>
           <div className="flex flex-col">
             <p className="regular-16 block text-gray-20">Tingkat Kepastian</p>
