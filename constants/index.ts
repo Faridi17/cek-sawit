@@ -21,36 +21,36 @@ export const FEATURES = [
     icon: '/map.svg',
     variant: 'green',
     description:
-      'We provide a solution for you to be able to use our application when climbing, yes offline maps you can use at any time there is no signal at the location',
+      'Bertanggung jawab sebagai leader dalam proyek sistem pakar, mengatur koordinasi tim serta memastikan seluruh tahapan proyek berjalan dengan baik.',
   },
   {
     title: 'Adnan Al-Qadri',
     icon: '/calendar.svg',
     variant: 'green',
     description:
-      "Schedule an adventure with friends. On holidays, there are many interesting offers from Hilink. That way, there's no more discussion",
+      'Bertugas membuat dependency diagram untuk menggambarkan hubungan antar komponen dalam sistem pakar secara struktural.',
   },
   {
     title: 'Daffa Arigoh',
     icon: '/tech.svg',
     variant: 'green',
     description:
-      'Technology uses augmented reality as a guide to your hiking trail in the forest to the top of the mountain. Already supported by the latest technology without an internet connection',
+      'Membuat tabel keputusan dan melakukan reduksi tabel untuk menyederhanakan proses pengambilan keputusan dalam sistem pakar.',
   },
   {
     title: 'Qorie',
     icon: '/location.svg',
     variant: 'orange',
     description:
-      'Lots of new locations every month, because we have a worldwide community of climbers who share their best experiences with climbing',
+      'Merancang sistem berbasis aturan (rule-based system) dengan menggunakan pendekatan if-then rules untuk mendukung logika inferensi.',
   },
   {
     title: 'Muhammad Azka Faridi',
     icon: '/location.svg',
     variant: 'orange',
     description:
-      'Lots of new locations every month, because we have a worldwide community of climbers who share their best experiences with climbing',
-  },
+      'Bertugas membuat dan mengimplementasikan program sistem pakar berdasarkan desain dan aturan yang telah disusun sebelumnya.',
+  },  
 ];
 
 // FOOTER SECTION

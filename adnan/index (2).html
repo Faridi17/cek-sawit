@@ -1,0 +1,207 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oil Palm Disease Diagnosis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">Oil Palm Disease Diagnosis System</h1>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Input Symptoms</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Leaf Conditions -->
+                <div>
+                    <label class="block mb-2 font-medium">Bercak Daun (Leaf Spots):</label>
+                    <select id="bercak_daun" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-medium">Daun Menguning (Yellowing Leaves):</label>
+                    <select id="daun_menguning" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <!-- Stem Conditions -->
+                <div>
+                    <label class="block mb-2 font-medium">Busuk Batang (Stem Rot):</label>
+                    <select id="busuk_batang" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-medium">Busuk Pangkal Atas (Upper Stem Rot):</label>
+                    <select id="busuk_pangkal_atas" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <!-- Root Conditions -->
+                <div>
+                    <label class="block mb-2 font-medium">Busuk Akar (Root Rot):</label>
+                    <select id="busuk_akar" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-medium">Ganoderma Infection:</label>
+                    <select id="ganoderma" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <!-- Fruit Conditions -->
+                <div>
+                    <label class="block mb-2 font-medium">Busuk Buah (Fruit Rot):</label>
+                    <select id="busuk_buah" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-medium">Buah Kecil/Cacat (Small/Defective Fruit):</label>
+                    <select id="buah_kecil" class="w-full p-2 border rounded">
+                        <option value="Ya">Ya</option>
+                        <option value="Tidak">Tidak</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="diagnose()" class="mt-6 w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">Diagnose</button>
+        </div>
+        <div id="result" class="mt-6 bg-white p-6 rounded-lg shadow-md hidden">
+            <h2 class="text-xl font-semibold mb-4">Diagnosis Result</h2>
+            <p id="diagnosis" class="mb-2"></p>
+            <p id="confidence" class="mb-2"></p>
+        </div>
+    </div>
+    <script>
+        function diagnose() {
+            // Collect input values
+            const facts = {
+                bercak_daun: document.getElementById('bercak_daun').value,
+                daun_menguning: document.getElementById('daun_menguning').value,
+                busuk_batang: document.getElementById('busuk_batang').value,
+                busuk_pangkal_atas: document.getElementById('busuk_pangkal_atas').value,
+                busuk_akar: document.getElementById('busuk_akar').value,
+                ganoderma: document.getElementById('ganoderma').value,
+                busuk_buah: document.getElementById('busuk_buah').value,
+                buah_kecil: document.getElementById('buah_kecil').value
+            };
+
+            // Initialize conditions
+            let kondisi_daun, kondisi_batang, kondisi_akar, kondisi_buah;
+            let penyakit, cf;
+
+            // Rule 1 & 2: Leaf Condition
+            if (facts.bercak_daun === "Ya" || facts.daun_menguning === "Ya") {
+                kondisi_daun = "Not-ok";
+            } else {
+                kondisi_daun = "Ok";
+            }
+
+            // Rule 3 & 4: Stem Condition
+            if (facts.busuk_batang === "Ya" || facts.busuk_pangkal_atas === "Ya") {
+                kondisi_batang = "Not-ok";
+            } else {
+                kondisi_batang = "Ok";
+            }
+
+            // Rule 5 & 6: Root Condition
+            if (facts.busuk_akar === "Ya" || facts.ganoderma === "Ya") {
+                kondisi_akar = "Not-ok";
+            } else {
+                kondisi_akar = "Ok";
+            }
+
+            // Rule 7 & 8: Fruit Condition
+            if (facts.busuk_buah === "Ya" || facts.buah_kecil === "Ya") {
+                kondisi_buah = "Not-ok";
+            } else {
+                kondisi_buah = "Ok";
+            }
+
+            // Rule 9 & 10: Disease Diagnosis
+            if (kondisi_daun === "Ok" && kondisi_batang === "Ok" && kondisi_akar === "Ok" && kondisi_buah === "Ok") {
+                penyakit = "Tidak ada penyakit";
+                cf = 1.0;
+            } else {
+                penyakit = "Terserang penyakit";
+                // Determine CF based on conditions (updated from PAGE18)
+                if (kondisi_daun === "Not-ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Not-ok") {
+                    cf = 0.9;
+                } else if (
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Ok") ||
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Ok" && kondisi_buah === "Ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Not-ok" && kondisi_akar === "Ok" && kondisi_buah === "Ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Ok" && kondisi_akar === "Not-ok" && kondisi_buah === "Ok")
+                ) {
+                    cf = 0.8;
+                } else if (
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Ok" && kondisi_akar === "Ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Ok" && kondisi_batang === "Ok" && kondisi_akar === "Ok" && kondisi_buah === "Not-ok") ||
+                    (kondisi_daun === "Not-ok" && kondisi_batang === "Ok" && kondisi_akar === "Ok" && kondisi_buah === "Ok")
+                ) {
+                    cf = 0.6;
+                }
+            }
+
+            // Display results
+            document.getElementById('diagnosis').textContent = `Diagnosis: ${penyakit}`;
+            document.getElementById('confidence').textContent = `Certainty Factor: ${cf}`;
+            document.getElementById('result').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

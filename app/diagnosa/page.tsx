@@ -11,6 +11,20 @@ interface FormData {
     tingkat_keparahan: string;
 }
 
+const cfRules: Record<string, number> = {
+    bercak_cokelat: 0.7,
+    menguning: 0.6,
+    layu: 0.65,
+    pertumbuhan_lambat: 0.5,
+    pembusukan: 0.75,
+    daun: 0.6,
+    buah: 0.5,
+    akar: 0.7,
+    batang: 0.65,
+    ringan: 0.4,
+    parah: 0.9,
+};
+
 const disease = {
     tidak_ada_penyakit: {
         name: "Tidak Ada Penyakit",
@@ -86,6 +100,7 @@ type DiseaseKey = keyof typeof disease;
 const DiagnosaPage = () => {
     const [detectedDisease, setDetectedDisease] = useState<DiseaseKey | "">('');
     const [loading, setLoading] = useState(false)
+    const [CertaintyFactor, setCertaintyFactor] = useState(0)
     const {
         register,
         handleSubmit,
@@ -102,36 +117,43 @@ const DiagnosaPage = () => {
         const { status_tanaman, bagian_terdampak, tingkat_keparahan } = data;
         let result: keyof typeof disease | "" = "";
 
+        const cf1 = cfRules[status_tanaman] || 0;
+        const cf2 = cfRules[bagian_terdampak] || 0;
+        const cf3 = cfRules[tingkat_keparahan] || 0;
+
+        const cfCombine12 = cf1 + cf2 * (1 - cf1);        
+        const cfFinal = cfCombine12 + cf3 * (1 - cfCombine12); 
+
+        console.log(cfFinal);
+        
+
 
         if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "daun") result = "bercak_daun";
         else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "buah") result = "busuk_buah";
         else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "akar" && tingkat_keparahan === "ringan") result = "tidak_ada_penyakit";
         else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "akar" && tingkat_keparahan === "parah") result = "busuk_akar";
         else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "batang") result = "busuk_pangkal_batang";
-
         else if (status_tanaman === "menguning" && bagian_terdampak === "daun") result = "daun_menguning";
         else if (status_tanaman === "menguning" && bagian_terdampak === "buah" && tingkat_keparahan === "ringan") result = "tidak_ada_penyakit";
         else if (status_tanaman === "menguning" && bagian_terdampak === "buah" && tingkat_keparahan === "parah") result = "busuk_buah";
         else if (status_tanaman === "menguning" && bagian_terdampak === "akar") result = "ganoderma";
         else if (status_tanaman === "menguning" && bagian_terdampak === "batang") result = "busuk_pangkal_atas";
-
         else if ((status_tanaman === "layu" && bagian_terdampak === "buah") || (status_tanaman === "pembusukan" && bagian_terdampak === "buah")) result = "busuk_buah";
         else if ((status_tanaman === "layu" && bagian_terdampak === "akar") || (status_tanaman === "pembusukan" && bagian_terdampak === "akar")) result = "busuk_akar";
         else if ((status_tanaman === "layu" && bagian_terdampak === "batang" && tingkat_keparahan === "ringan") || (status_tanaman === "pembusukan" && bagian_terdampak === "batang" && tingkat_keparahan === "ringan")) result = "busuk_pangkal_atas";
         else if ((status_tanaman === "layu" && bagian_terdampak === "batang" && tingkat_keparahan === "parah") || (status_tanaman === "pembusukan" && bagian_terdampak === "batang" && tingkat_keparahan === "parah")) result = "busuk_pangkal_batang";
-
         else if ((status_tanaman === "layu" && bagian_terdampak === "daun" && tingkat_keparahan === "ringan") || (status_tanaman === "pembusukan" && bagian_terdampak === "daun")) result = "bercak_daun";
         else if (status_tanaman === "layu" && bagian_terdampak === "daun" && tingkat_keparahan === "parah") result = "daun_menguning";
-
         else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "daun") result = "daun_menguning";
         else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "buah") result = "tidak_ada_penyakit";
         else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "akar") result = "ganoderma";
         else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "batang") result = "busuk_pangkal_batang";
 
-
         setDetectedDisease(result);
+        setCertaintyFactor(cfFinal);
         setLoading(false);
     };
+
 
     return (
         <div className="max-container padding-container flex flex-col gap-14 py-10 pb-32 xl:gap-32 lg:py-20 xl:flex-row">
@@ -223,6 +245,9 @@ const DiagnosaPage = () => {
                                             </li>
                                         ))}
                                     </ul>
+                                </div>
+                                <div className='mt-8 bg-green-500 px-5 py-3 rounded-lg'>
+                                    <h2 className='text-white xl:text-lg text-md font-semibold'>Tingkat Kepastian: {Math.round(CertaintyFactor * 100)}%</h2>
                                 </div>
                             </>
                         )}
