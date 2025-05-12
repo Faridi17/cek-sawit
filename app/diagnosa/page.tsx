@@ -16,8 +16,6 @@ interface FormData {
     buah_cacat: 'ya' | 'tidak';
 }
 
-
-
 const cfRules: Record<string, number> = {
     // Kondisi Daun
     kondisi_daun_ok: 0.0,
@@ -36,8 +34,11 @@ const cfRules: Record<string, number> = {
     kondisi_buah_not_ok: 0.5,
 };
 
-
-
+const treatment: string[] = [
+    "Periksa tanaman secara menyeluruh untuk mengidentifikasi penyakit spesifik.",
+    "Konsultasikan dengan ahli pertanian atau dinas pertanian setempat.",
+    "Lakukan sanitasi kebun untuk mencegah penyebaran penyakit."
+];
 
 
 const DiagnosaPage = () => {
@@ -237,15 +238,34 @@ const DiagnosaPage = () => {
                 <h1 className='lg:bold-40 bold-32 text-gray-800 px-3'>Hasil Diagnosa</h1>
                 {detectedDisease ? (
                     <div className="mt-4 xl:mt-8 xl:p-9 p-5 xl:border-4 rounded-lg">
-                        {detectedDisease && (
+                        {detectedDisease === 'terserang' ? (
                             <div className='mb-4'>
-                                <h2 className="bold-24">
-                                    {detectedDisease === "terserang" ? "Terserang Penyakit" : "Tidak Terserang Penyakit"}</h2>
-                                {detectedDisease === 'terserang' &&
-                                    <div className='mt-8 bg-green-500 px-5 py-3 rounded-lg'>
-                                        <h2 className='text-white xl:text-lg text-md font-semibold'>Tingkat Kepastian: {Math.round(CertaintyFactor * 100)}%</h2>
-                                    </div>
-                                }
+                                <div className="space-y-4 mb-8">
+                                    <h2 className="lg:bold-32 bold-24">
+                                        Terserang Penyakit
+                                    </h2>
+                                    <p className='text-gray-50'>Tanaman menunjukkan gejala penyakit berdasarkan kondisi yang diamati. Silakan konsultasikan dengan ahli pertanian untuk diagnosis lebih lanjut.</p>
+                                </div>
+                                <div className="space-y-4">
+                                    <h2 className='lg:bold-32 bold-24 text-gray-800'>Penanganan</h2>
+                                    <ul className="mt-4 space-y-4">
+                                        {treatment?.map((treatment, index) => (
+                                            <li key={index} className="flex items-start gap-3">
+                                                <div className="h-8 w-8 px-3 flex items-center justify-center bg-green-50 text-white rounded-full font-bold flex-shrink-0">
+                                                    {index + 1}
+                                                </div>
+                                                <p className="text-gray-50 xl:mt-1">{treatment}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className='mt-8 bg-green-500 px-5 py-3 rounded-lg'>
+                                    <h2 className='text-white xl:text-lg text-md font-semibold'>Tingkat Kepastian: {Math.round(CertaintyFactor * 100)}%</h2>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='mb-4'>
+                                <h2 className="bold-24">Tidak Terserang Penyakit</h2>
                             </div>
                         )}
                     </div>
