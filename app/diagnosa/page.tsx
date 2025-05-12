@@ -6,99 +6,42 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { BsTextParagraph } from "react-icons/bs";
 
 interface FormData {
-    status_tanaman: string;
-    bagian_terdampak: string;
-    tingkat_keparahan: string;
+    bercak_daun: 'ya' | 'tidak';
+    daun_menguning: 'ya' | 'tidak';
+    busuk_pangkal_batang: 'ya' | 'tidak';
+    busuk_pangkal_atas: 'ya' | 'tidak';
+    busuk_akar: 'ya' | 'tidak';
+    ganoderma: 'ya' | 'tidak';
+    busuk_buah: 'ya' | 'tidak';
+    buah_cacat: 'ya' | 'tidak';
 }
 
+
+
 const cfRules: Record<string, number> = {
-    bercak_cokelat: 0.7,
-    menguning: 0.6,
-    layu: 0.65,
-    pertumbuhan_lambat: 0.5,
-    pembusukan: 0.75,
-    daun: 0.6,
-    buah: 0.5,
-    akar: 0.7,
-    batang: 0.65,
-    ringan: 0.4,
-    parah: 0.9,
+    // Kondisi Daun
+    kondisi_daun_ok: 0.0,
+    kondisi_daun_not_ok: 0.6,
+
+    // Kondisi Batang
+    kondisi_batang_ok: 0.0,
+    kondisi_batang_not_ok: 0.65,
+
+    // Kondisi Akar
+    kondisi_akar_ok: 0.0,
+    kondisi_akar_not_ok: 0.7,
+
+    // Kondisi Buah
+    kondisi_buah_ok: 0.0,
+    kondisi_buah_not_ok: 0.5,
 };
 
-const disease = {
-    tidak_ada_penyakit: {
-        name: "Tidak Ada Penyakit",
-    },
-    ganoderma: {
-        name: "Ganoderma",
-        is: "Penyakit Ganoderma merupakan salah satu jenis penyakit yang sangat mematikan bagi tanaman kelapa sawit di perkebunan. Serangan penyakit ini berasal dari jamur Ganoderma sp. Gejalanya meliputi layu, daun menguning, serta busuk pada bagian batang.",
-        treatment: [
-            "Gunakan fungisida berbasis Trichoderma untuk mengendalikan infeksi.",
-            "Lakukan sanitasi kebun secara rutin untuk mencegah penyebaran.",
-            "Periksa akar secara berkala dan buang pohon yang terinfeksi."
-        ]
-    },
-    busuk_buah: {
-        name: "Busuk Buah",
-        is: "Penyebab utama buah sawit busuk sebelum matang adalah serangan jamur patogen Marasmius palmivorus. Infeksi ini menyebabkan buah cepat membusuk dan jatuh, menurunkan produktivitas kebun secara signifikan, terutama saat kondisi lingkungan lembap.",
-        treatment: [
-            "Pemangkasan buah yang terinfeksi.",
-            "Aplikasi fungisida untuk mencegah penyebaran jamur.",
-            "Jaga kebersihan kebun dengan memusnahkan buah yang terinfeksi."
-        ]
-    },
-    busuk_akar: {
-        name: "Busuk Akar",
-        is: "Busuk akar pada kelapa sawit disebabkan oleh infeksi jamur tanah yang menyerang sistem perakaran. Infeksi ini menyebabkan akar membusuk, pohon menjadi kerdil, layu, hingga akhirnya mati karena tidak mampu menyerap air dan nutrisi.",
-        treatment: [
-            "Gunakan fungisida sistemik yang dapat meresap ke dalam tanah.",
-            "Pangkas akar yang terinfeksi untuk menghindari penyebaran lebih lanjut."
-        ]
-    },
-    busuk_pangkal_batang: {
-        name: "Busuk Pangkal Batang",
-        is: "Busuk pangkal batang terjadi akibat infeksi jamur atau bakteri yang menyerang bagian bawah batang dekat permukaan tanah. Gejalanya berupa jaringan batang yang melembek, berwarna gelap, dan mengeluarkan bau busuk.",
-        treatment: [
-            "Pangkas bagian batang yang terinfeksi.",
-            "Aplikasi fungisida lokal pada bagian yang terkontaminasi.",
-            "Perbaiki drainase tanah untuk menghindari kelembapan berlebih."
-        ]
-    },
-    busuk_pangkal_atas: {
-        name: "Busuk Pangkal Atas",
-        is: "Busuk pangkal atas menyerang bagian atas batang tanaman, biasanya karena infeksi jamur setelah luka mekanis atau akibat kelembapan berlebih. Tanaman menunjukkan tanda-tanda layu dan pertumbuhan terganggu.",
-        treatment: [
-            "Pangkas bagian yang terinfeksi dan buang bagian tanaman yang terkontaminasi.",
-            "Gunakan fungisida untuk mengendalikan penyebaran infeksi.",
-            "Perbaiki sirkulasi udara dan hindari kelebihan air di sekitar pangkal tanaman."
-        ]
-    },
-    daun_menguning: {
-        name: "Daun Menguning",
-        is: "Daun menguning bisa disebabkan oleh kekurangan unsur hara, terutama nitrogen, atau akibat serangan hama dan penyakit. Tanaman yang kekurangan nutrisi akan menunjukkan daun berwarna kuning, kering, dan mudah rontok.",
-        treatment: [
-            "Berikan pupuk yang mengandung unsur hara lengkap, terutama nitrogen.",
-            "Perbaiki sistem irigasi agar tanaman tidak kekurangan air.",
-            "Periksa kemungkinan serangan hama atau penyakit lain."
-        ]
-    },
-    bercak_daun: {
-        name: "Bercak Daun",
-        is: "Bercak daun pada kelapa sawit biasanya disebabkan oleh infeksi jamur. Gejalanya berupa bercak-bercak kecil berwarna cokelat atau hitam pada permukaan daun yang bisa meluas dan menyebabkan daun mati.",
-        treatment: [
-            "Aplikasi fungisida yang sesuai untuk mengendalikan jamur penyebab bercak.",
-            "Lakukan pemangkasan daun yang terinfeksi untuk mengurangi sumber penyakit.",
-            "Pastikan kebersihan kebun dengan membuang daun-daun yang terinfeksi."
-        ]
-    }
-} as const;
 
 
-type DiseaseKey = keyof typeof disease;
 
 
 const DiagnosaPage = () => {
-    const [detectedDisease, setDetectedDisease] = useState<DiseaseKey | "">('');
+    const [detectedDisease, setDetectedDisease] = useState<"terserang" | "tidak_terserang" | "">("");
     const [loading, setLoading] = useState(false)
     const [CertaintyFactor, setCertaintyFactor] = useState(0)
     const {
@@ -107,50 +50,49 @@ const DiagnosaPage = () => {
         formState: { errors, isSubmitting },
     } = useForm<FormData>()
 
-    console.log(disease);
 
 
     const onSubmit: SubmitHandler<FormData> = (data, e) => {
         e?.preventDefault();
         setLoading(true);
 
-        const { status_tanaman, bagian_terdampak, tingkat_keparahan } = data;
-        let result: keyof typeof disease | "" = "";
+        // Cek apakah ada gejala yang terdeteksi (nilai "ya")
+        const isSick = Object.values(data).some((val) => val === 'ya');
 
-        const cf1 = cfRules[status_tanaman] || 0;
-        const cf2 = cfRules[bagian_terdampak] || 0;
-        const cf3 = cfRules[tingkat_keparahan] || 0;
+        // Cek kondisi daun
+        const isDaunNotOk = data.bercak_daun === 'ya' || data.daun_menguning === 'ya';
 
-        const cfCombine12 = cf1 + cf2 * (1 - cf1);        
-        const cfFinal = cfCombine12 + cf3 * (1 - cfCombine12); 
+        // Cek kondisi batang
+        const isBatangNotOk = data.busuk_pangkal_batang === 'ya' || data.busuk_pangkal_atas === 'ya';
 
-        console.log(cfFinal);
-        
+        // Cek kondisi akar
+        const isAkarNotOk = data.busuk_akar === 'ya' || data.ganoderma === 'ya';
 
+        // Cek kondisi buah
+        const isBuahNotOk = data.busuk_buah === 'ya' || data.buah_cacat === 'ya';
 
-        if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "daun") result = "bercak_daun";
-        else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "buah") result = "busuk_buah";
-        else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "akar" && tingkat_keparahan === "ringan") result = "tidak_ada_penyakit";
-        else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "akar" && tingkat_keparahan === "parah") result = "busuk_akar";
-        else if (status_tanaman === "bercak_cokelat" && bagian_terdampak === "batang") result = "busuk_pangkal_batang";
-        else if (status_tanaman === "menguning" && bagian_terdampak === "daun") result = "daun_menguning";
-        else if (status_tanaman === "menguning" && bagian_terdampak === "buah" && tingkat_keparahan === "ringan") result = "tidak_ada_penyakit";
-        else if (status_tanaman === "menguning" && bagian_terdampak === "buah" && tingkat_keparahan === "parah") result = "busuk_buah";
-        else if (status_tanaman === "menguning" && bagian_terdampak === "akar") result = "ganoderma";
-        else if (status_tanaman === "menguning" && bagian_terdampak === "batang") result = "busuk_pangkal_atas";
-        else if ((status_tanaman === "layu" && bagian_terdampak === "buah") || (status_tanaman === "pembusukan" && bagian_terdampak === "buah")) result = "busuk_buah";
-        else if ((status_tanaman === "layu" && bagian_terdampak === "akar") || (status_tanaman === "pembusukan" && bagian_terdampak === "akar")) result = "busuk_akar";
-        else if ((status_tanaman === "layu" && bagian_terdampak === "batang" && tingkat_keparahan === "ringan") || (status_tanaman === "pembusukan" && bagian_terdampak === "batang" && tingkat_keparahan === "ringan")) result = "busuk_pangkal_atas";
-        else if ((status_tanaman === "layu" && bagian_terdampak === "batang" && tingkat_keparahan === "parah") || (status_tanaman === "pembusukan" && bagian_terdampak === "batang" && tingkat_keparahan === "parah")) result = "busuk_pangkal_batang";
-        else if ((status_tanaman === "layu" && bagian_terdampak === "daun" && tingkat_keparahan === "ringan") || (status_tanaman === "pembusukan" && bagian_terdampak === "daun")) result = "bercak_daun";
-        else if (status_tanaman === "layu" && bagian_terdampak === "daun" && tingkat_keparahan === "parah") result = "daun_menguning";
-        else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "daun") result = "daun_menguning";
-        else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "buah") result = "tidak_ada_penyakit";
-        else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "akar") result = "ganoderma";
-        else if (status_tanaman === "pertumbuhan_lambat" && bagian_terdampak === "batang") result = "busuk_pangkal_batang";
+        // Kumpulkan nilai CF dari kondisi yang tidak OK
+        const cfList: number[] = [];
+        if (isDaunNotOk) cfList.push(cfRules.kondisi_daun_not_ok);
+        if (isBatangNotOk) cfList.push(cfRules.kondisi_batang_not_ok);
+        if (isAkarNotOk) cfList.push(cfRules.kondisi_akar_not_ok);
+        if (isBuahNotOk) cfList.push(cfRules.kondisi_buah_not_ok);
 
+        // Hitung total CF menggunakan metode kombinasi CF
+        let totalCF = 0;
+        if (cfList.length > 0) {
+            totalCF = cfList[0];
+            for (let i = 1; i < cfList.length; i++) {
+                totalCF = totalCF + cfList[i] * (1 - totalCF);
+            }
+        }
+
+        // Tentukan hasil diagnosa berdasarkan apakah ada gejala (sakit atau tidak)
+        const result = isSick ? "terserang" : "tidak_terserang";
+
+        // Set hasil diagnosa dan nilai CF
         setDetectedDisease(result);
-        setCertaintyFactor(cfFinal);
+        setCertaintyFactor(Number(totalCF.toFixed(2))); // misalnya: 0.88
         setLoading(false);
     };
 
@@ -169,46 +111,118 @@ const DiagnosaPage = () => {
                         />
                         <h2 className="bold-40 lg:bold-64">Mulai Diagnosa</h2>
                     </div>
-                    <div className='my-7 space-y-2'>
-                        <label className='text-lg text-green-50 font-semibold'>Status Tanaman</label>
-                        <select
-                            id="status_tanaman"
-                            {...register('status_tanaman', { required: true })}
-                            className="outline-none h-[3.4rem] border-4 bg-white font-medium text-lg text-gray-800 rounded-xl border-gray-300 block w-full p-2.5 focus:outline-none focus:ring-green-50 focus:border-green-50"
-                        >
-                            <option value="bercak_cokelat">Bercak Cokelat</option>
-                            <option value="menguning">Menguning</option>
-                            <option value="layu">Layu</option>
-                            <option value="pertumbuhan_lambat">Pertumbuhan Lambat</option>
-                            <option value="pembusukan">Pembusukan</option>
-                        </select>
+                    <div className="my-7 space-y-6">
+
+                        {/* KONDISI DAUN */}
+                        <div className="space-y-2">
+                            <label className="text-lg text-green-50 font-semibold">Kondisi Daun</label>
+                            <div className="grid xl:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600">Bercak Daun</label>
+                                    <select
+                                        {...register('bercak_daun', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Daun Menguning</label>
+                                    <select
+                                        {...register('daun_menguning', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* KONDISI BATANG */}
+                        <div className="space-y-2">
+                            <label className="text-lg text-green-50 font-semibold">Kondisi Batang</label>
+                            <div className="grid xl:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Busuk Pangkal Batang</label>
+                                    <select
+                                        {...register('busuk_pangkal_batang', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Busuk Pangkal Atas</label>
+                                    <select
+                                        {...register('busuk_pangkal_atas', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* KONDISI AKAR */}
+                        <div className="space-y-2">
+                            <label className="text-lg text-green-50 font-semibold">Kondisi Akar</label>
+                            <div className="grid xl:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Busuk Akar</label>
+                                    <select
+                                        {...register('busuk_akar', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Ganoderma</label>
+                                    <select
+                                        {...register('ganoderma', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* KONDISI BUAH */}
+                        <div className="space-y-2">
+                            <label className="text-lg text-green-50 font-semibold">Kondisi Buah</label>
+                            <div className="grid xl:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Busuk Buah</label>
+                                    <select
+                                        {...register('busuk_buah', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-600 mb-1">Buah Kecil / Cacat</label>
+                                    <select
+                                        {...register('buah_cacat', { required: true })}
+                                        className="w-full h-[3.4rem] border-4 rounded-xl bg-white text-gray-800 font-medium text-lg p-2.5 border-gray-300 focus:outline-none focus:ring-green-50 focus:border-green-50"
+                                    >
+                                        <option value="ya">Ya</option>
+                                        <option value="tidak">Tidak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div className='my-7 space-y-2'>
-                        <label className='text-lg text-green-50 font-semibold'>Bagian Terdampak</label>
-                        <select
-                            id="bagian_terdampak"
-                            {...register('bagian_terdampak', { required: true })}
-                            className="outline-none h-[3.4rem] border-4 bg-white font-medium text-lg text-gray-800 rounded-xl border-gray-300 block w-full p-2.5 focus:outline-none focus:ring-green-50 focus:border-green-50"
-                        >
-                            <option value="daun">Daun</option>
-                            <option value="buah">Buah</option>
-                            <option value="akar">Akar</option>
-                            <option value="batang">Batang</option>
-                        </select>
-                    </div>
-
-                    <div className='my-7 space-y-2'>
-                        <label className='text-lg text-green-50 font-semibold'>Tingkat Keparahan</label>
-                        <select
-                            id="tingkat_keparahan"
-                            {...register('tingkat_keparahan', { required: true })}
-                            className="outline-none h-[3.4rem] border-4 bg-white font-medium text-lg text-gray-800 rounded-xl border-gray-300 block w-full p-2.5 focus:outline-none focus:ring-green-50 focus:border-green-50"
-                        >
-                            <option value="ringan">Ringan</option>
-                            <option value="parah">Parah</option>
-                        </select>
-                    </div>
 
                     <div className='mt-12'>
                         {loading ?
@@ -223,33 +237,16 @@ const DiagnosaPage = () => {
                 <h1 className='lg:bold-40 bold-32 text-gray-800 px-3'>Hasil Diagnosa</h1>
                 {detectedDisease ? (
                     <div className="mt-4 xl:mt-8 xl:p-9 p-5 xl:border-4 rounded-lg">
-                        {detectedDisease === "tidak_ada_penyakit" ? (
+                        {detectedDisease && (
                             <div className='mb-4'>
-                                <h2 className="bold-24">{disease[detectedDisease]?.name || "Tidak Diketahui"}</h2>
+                                <h2 className="bold-24">
+                                    {detectedDisease === "terserang" ? "Terserang Penyakit" : "Tidak Terserang Penyakit"}</h2>
+                                {detectedDisease === 'terserang' &&
+                                    <div className='mt-8 bg-green-500 px-5 py-3 rounded-lg'>
+                                        <h2 className='text-white xl:text-lg text-md font-semibold'>Tingkat Kepastian: {Math.round(CertaintyFactor * 100)}%</h2>
+                                    </div>
+                                }
                             </div>
-                        ) : (
-                            <>
-                                <div className='space-y-8 mb-8'>
-                                    <h2 className="lg:bold-32 bold-24">{disease[detectedDisease]?.name || "Tidak Diketahui"}</h2>
-                                    <p className='text-gray-50'>{disease[detectedDisease]?.is}</p>
-                                </div>
-                                <div className="space-y-8">
-                                    <h2 className='lg:bold-32 bold-24 text-gray-800'>Penanganan</h2>
-                                    <ul className="mt-4 space-y-4">
-                                        {disease[detectedDisease]?.treatment?.map((treatment, index) => (
-                                            <li key={index} className="flex items-start gap-3">
-                                                <div className="h-8 w-8 px-3 flex items-center justify-center bg-green-50 text-white rounded-full font-bold flex-shrink-0">
-                                                    {index + 1}
-                                                </div>
-                                                <p className="text-gray-50 xl:mt-1">{treatment}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div className='mt-8 bg-green-500 px-5 py-3 rounded-lg'>
-                                    <h2 className='text-white xl:text-lg text-md font-semibold'>Tingkat Kepastian: {Math.round(CertaintyFactor * 100)}%</h2>
-                                </div>
-                            </>
                         )}
                     </div>
                 ) : (
